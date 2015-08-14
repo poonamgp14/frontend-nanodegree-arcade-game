@@ -51,6 +51,7 @@
                  * so that we can simply return this image if the developer
                  * attempts to load this file in the future.
                  */
+                 //console.log("Image loaded")
                 resourceCache[url] = img;
 
                 /* Once the image is actually loaded and properly cached,
