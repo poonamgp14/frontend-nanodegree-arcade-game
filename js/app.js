@@ -1,18 +1,15 @@
+var isCollision = false;
+
 // Enemies our player must avoid
 var Enemy = function(x,y,speed) {
-    // Variables applied to each of our instances go here,
- // we've provided one for you to get started
-
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
     this.x = x;
     this.y = y;
     this.speed = Math.floor(Math.random() * 250 + 1);
+    this.width = 70;
+    this.height = 30;
 }
 
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
@@ -24,37 +21,34 @@ Enemy.prototype.update = function(dt) {
         }
 };
 
-
-// Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 
 }
-
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
-
+//PLAYER CLASS AND ITS METHODS
 var Player = function(){
     this.sprite = 'images/char-boy.png';
-    this.startX = 420;
-    this.startY = 400;
+    this.x = 420;
+    this.y = 400;
     this.score = 0;
     this.lives = 3;
+    this.width = 20;
+    this.height = 40;
 }
 
 Player.prototype.update = function(dt){
 
-    this.checkForCollision();
+    //this.checkForCollision();
+    this.enemyCollision();
     //TODO - if lives is zero or less than zero then restart the game
 
-    if (this.startY < 0){
+    if (this.y < 0){
         this.rePosition();
     }
 };
 
 Player.prototype.render = function(){
-    ctx.drawImage(Resources.get(this.sprite), this.startX, this.startY);
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     ctx.fillStyle = "black";
     ctx.font = '33px serif';
     ctx.fillText("Score: " + this.score, 0, 40);
@@ -62,39 +56,38 @@ Player.prototype.render = function(){
 };
 
 Player.prototype.handleInput = function(direction){
-    if (direction === 'up' && this.startY > 5){
-        this.startY -= 65;
+    if (direction === 'up' && this.y > 5){
+        this.y -= 65;
     }
-    if (direction === 'down' && this.startY < 385){
-        this.startY += 65;
+    if (direction === 'down' && this.y < 385){
+        this.y += 65;
     }
-    if (direction === 'left' && this.startX > 50){
-        this.startX -= 85;
+    if (direction === 'left' && this.x > 50){
+        this.x -= 65;
     }
-    if (direction === 'right' && this.startX < 750){
-        this.startX += 85;
+    if (direction === 'right' && this.x < 750){
+        this.x += 65;
     }
 };
 
-Player.prototype.checkForCollision = function() {
-    for (var i = 0; i < allEnemies.length; i++) {
-
-        var collisionX = Math.abs(player.startX - allEnemies[i].x);
-        var collisionY = Math.abs(player.startY - allEnemies[i].y);
-
-        if(collisionX < 40 && collisionY < 40) {
-            this.score-- ;
-            this.lives-- ;
-            this.rePosition();
-        }
+Player.prototype.enemyCollision = function(){
+    var collEnemy = checkForCollision(allEnemies,player);
+    if (collEnemy){
+        this.score-- ;
+        this.lives-- ;
+        isCollision = false;
+        //console.log("yes,collision occured with enemy");
+        this.rePosition();
     }
+
 };
 
 Player.prototype.rePosition = function(){
-    this.startX = 420;
-    this.startY = 400;
+    this.x = 420;
+    this.y = 400;
 }
 
+//HEART CLASS AND ITS METHODS
 var Heart = function(x,y){
     this.sprite = 'images/Heart.png';
     this.x = x;
@@ -104,17 +97,34 @@ var Heart = function(x,y){
 };
 
 Heart.prototype.update = function(dt){
+    this.heartCollision();
 
-    //TODO -
-
-
+    //TODO -setinterval function for pounding of heart
 };
 
 Heart.prototype.render = function(){
 
-    ctxHeart.drawImage(Resources.get(this.sprite), this.x, this.y,this.width,this.height);
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y,this.width,this.height);
 };
 
+Heart.prototype.heartCollision = function(){
+    var collHeart = checkForCollision(allHeart,player);
+    if (collHeart){
+        player.score++ ;
+        player.lives++ ;
+        isCollision = false;
+        //do something
+    }
+};
+
+
+
+// player object
+var player = new Player();
+
+
+//creating heart object
+//TODO - CREATE A LOOP FOR HEART INSTANCES
 var heart = new Heart(15,115);
 var heart1 = new Heart(15+95*2,115);
 var heart2 = new Heart(15+95*4,115);
@@ -127,11 +137,12 @@ var heart8 = new Heart(15+95*6,(63*6)-15);
 var heart9 = new Heart(15+95*8,(63*6)-15);
 var allHeart = [heart,heart1,heart2,heart3,heart4,heart5,heart6,heart7,heart8,heart9];
 
+//
 
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
+
 var allEnemies = [];
 var numberOfEnemies = 8;
 var i=0;
@@ -159,13 +170,31 @@ while (i < 8){
 };
 
 
-var player = new Player();
+var checkForCollision = function(arrayOfObj,anotherObj) {
+    for (var i = 0; i < arrayOfObj.length; i++) {
+
+        //var collisionX = Math.abs(anotherObj.x - arrayOfObj[i].x);
+        //var collisionY = Math.abs(anotherObj.y - arrayOfObj[i].y);
+
+        if (anotherObj.x < arrayOfObj[i].x + arrayOfObj[i].width
+            && anotherObj.x + anotherObj.width  > arrayOfObj[i].x
+            && anotherObj.y < arrayOfObj[i].y + arrayOfObj[i].height
+            && anotherObj.y + anotherObj.height > arrayOfObj[i].y) {
+        //if((collisionX < 40 && collisionY < 40)){
+                console.log("yes!"+ arrayOfObjects[i] +" collided wid "+ "player")
+                //console.log(distance);
+                return isCollision = true;
 
 
+        }
+    }
+};
 
+//function measureDistance(x1,y1,x2,y2){
+//    var dist = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
+//    return dist
+//}
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
         37: 'left',
@@ -173,6 +202,5 @@ document.addEventListener('keyup', function(e) {
         39: 'right',
         40: 'down'
     };
-
     player.handleInput(allowedKeys[e.keyCode]);
 });

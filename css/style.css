@@ -3,18 +3,8 @@ body {
     margin: 0;
 }
 
-#main{
-	 position:absolute;
-    top: 0;
-}
 
-#canvas-heart{
-	margin:0 auto;
-	z-index: 1;
-	/*background-color: red;*/
-	margin-top: -500px ;
 
-}
 
 #canvas-bkgd{
 	z-index : -1;

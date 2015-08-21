@@ -21,18 +21,18 @@ var Engine = (function(global) {
      */
     var doc = global.document,
         win = global.window,
-        bkgdCanvas = doc.getElementById('canvas-bkgd'),
+        bkgdCanvas = document.getElementById('canvas-bkgd'),
         ctx = bkgdCanvas.getContext('2d'),
-        heartCanvas = doc.getElementById('canvas-heart'),
-        ctxHeart = heartCanvas.getContext('2d'),
+        //heartCanvas = document.getElementById('canvas-heart'),
+        //ctxHeart = heartCanvas.getContext('2d'),
         lastTime;
 
     /*canvas.width = 505;
     canvas.height = 606;*/
     bkgdCanvas.width = 850;
     bkgdCanvas.height = 550;
-    heartCanvas.width = 850;
-    heartCanvas.height = 550;
+    //heartCanvas.width = 850;
+    //heartCanvas.height = 550;
     //doc.body.appendChild(canvas);
 
 
@@ -102,7 +102,12 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
+
         player.update();
+        allHeart.forEach(function(heart){
+            heart.update(dt);
+        })
+
     }
 
     /* This function initially draws the "game level", it will then call
@@ -124,6 +129,7 @@ var Engine = (function(global) {
                 'images/grass-block.png',    // Row 2 of 2 of grass
                 'images/stone-block.png',
                 'images/grass-block.png'
+
 
             ],
             numRows = 8,
@@ -165,10 +171,12 @@ var Engine = (function(global) {
             enemy.render();
         });
 
-        player.render();
         allHeart.forEach(function(heart) {
             heart.render();
         });
+
+        player.render();
+
 
     }
 
@@ -191,7 +199,9 @@ var Engine = (function(global) {
         'images/enemy-bug.png',
         'images/char-boy.png',
         'images/cactus.png',
-        'images/Heart.png'
+        'images/Heart.png',
+        'images/Key.png',
+        'images/Gem-Green.png'
     ]);
     Resources.onReady(init);
 
@@ -200,4 +210,6 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+    //global.ctxHeart = ctxHeart;
 })(this);
+
