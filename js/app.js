@@ -181,7 +181,7 @@ var checkForCollision = function(arrayOfObj,anotherObj) {
             && anotherObj.y < arrayOfObj[i].y + arrayOfObj[i].height
             && anotherObj.y + anotherObj.height > arrayOfObj[i].y) {
         //if((collisionX < 40 && collisionY < 40)){
-                console.log("yes!"+ arrayOfObjects[i] +" collided wid "+ "player")
+                console.log("yes!"+ arrayOfObj[i] +" collided wid "+ "player")
                 //console.log(distance);
                 return isCollision = true;
 
