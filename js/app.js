@@ -25,6 +25,7 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 
 }
+
 //PLAYER CLASS AND ITS METHODS
 var Player = function(){
     this.sprite = 'images/char-boy.png';
@@ -108,12 +109,17 @@ Heart.prototype.render = function(){
 };
 
 Heart.prototype.heartCollision = function(){
-    var collHeart = checkForCollision(allHeart,player);
-    if (collHeart){
-        player.score++ ;
-        player.lives++ ;
-        isCollision = false;
-        //do something
+    for (var i = 0; i < allHeart.length; i++) {
+        var collisionX = Math.abs(player.x - allHeart[i].x);
+        var collisionY = Math.abs(player.y - allHeart[i].y);
+
+        if(collisionX <= 40 && (collisionY > 90 && collisionY <= 105)){
+                //console.log("yes!"+ allHeart[i] +" collided wid "+ "player")
+                var heartPos = i;
+                allHeart.splice(heartPos,1);
+                player.score++ ;
+                player.lives++ ;
+        }
     }
 };
 
@@ -172,28 +178,16 @@ while (i < 8){
 
 var checkForCollision = function(arrayOfObj,anotherObj) {
     for (var i = 0; i < arrayOfObj.length; i++) {
-
-        //var collisionX = Math.abs(anotherObj.x - arrayOfObj[i].x);
-        //var collisionY = Math.abs(anotherObj.y - arrayOfObj[i].y);
-
-        if (anotherObj.x < arrayOfObj[i].x + arrayOfObj[i].width
-            && anotherObj.x + anotherObj.width  > arrayOfObj[i].x
-            && anotherObj.y < arrayOfObj[i].y + arrayOfObj[i].height
-            && anotherObj.y + anotherObj.height > arrayOfObj[i].y) {
-        //if((collisionX < 40 && collisionY < 40)){
-                console.log("yes!"+ arrayOfObj[i] +" collided wid "+ "player")
-                //console.log(distance);
+    var collisionX = Math.abs(anotherObj.x - arrayOfObj[i].x);
+        var collisionY = Math.abs(anotherObj.y - arrayOfObj[i].y);
+        if((collisionX < 40 && collisionY < 40)){
+                //console.log("yes!"+ arrayOfObj[i] +" collided wid "+ "player")
                 return isCollision = true;
 
 
         }
     }
 };
-
-//function measureDistance(x1,y1,x2,y2){
-//    var dist = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
-//    return dist
-//}
 
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {

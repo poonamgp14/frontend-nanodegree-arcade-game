@@ -1,4 +1,4 @@
-/* Engine.js
+ /* Engine.js
  * This file provides the game loop functionality (update entities and render),
  * draws the initial game board on the screen, and then calls the update and
  * render methods on your player and enemy objects (defined in your app.js).
@@ -87,6 +87,7 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
+
         updateEntities(dt);
         // checkCollisions();
     }
@@ -120,6 +121,7 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+
         var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/grass-block.png',   // Row 1 of 2 of stone
@@ -155,7 +157,8 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 95, row * 63);
             }
         }
-
+        ctx.clearRect(0, 40, 200, 10);
+        ctx.clearRect(400, 40, 200, 10);
         renderEntities();
     }
 
@@ -167,6 +170,7 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
+
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
