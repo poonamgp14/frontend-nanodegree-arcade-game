@@ -108,6 +108,10 @@ var Engine = (function(global) {
         allHeart.forEach(function(heart){
             heart.update(dt);
         })
+        allCactus.forEach(function(cactus){
+            cactus.update(dt);
+        })
+        gem.update(dt);
 
     }
 
@@ -157,8 +161,7 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 95, row * 63);
             }
         }
-        ctx.clearRect(0, 40, 200, 10);
-        ctx.clearRect(400, 40, 200, 10);
+        ctx.clearRect(0, 0, 850, 40);
         renderEntities();
     }
 
@@ -179,7 +182,13 @@ var Engine = (function(global) {
             heart.render();
         });
 
+        allCactus.forEach(function(cactus) {
+            cactus.render();
+        });
+
         player.render();
+
+        gem.render();
 
 
     }
@@ -188,8 +197,23 @@ var Engine = (function(global) {
      * handle game reset states - maybe a new game menu or a game over screen
      * those sorts of things. It's only called once by the init() method.
      */
-    function reset() {
+    var reset = function() {
         // noop
+        if (player.game_over){
+            player.game_over = false;
+            allHeart = initHeartArr();
+            player.lives = 3;
+            player.score = 0;
+            render();
+        }
+        if (player.isGemCollected){
+            player.isGemCollected = false;
+            allHeart = initHeartArr();
+            player.lives = 3;
+            player.score = 0;
+            render();
+            player.rePosition();
+        }
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -204,8 +228,7 @@ var Engine = (function(global) {
         'images/char-boy.png',
         'images/cactus.png',
         'images/Heart.png',
-        'images/Key.png',
-        'images/Gem-Green.png'
+        'images/Gem-Orange.png'
     ]);
     Resources.onReady(init);
 
@@ -214,6 +237,6 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
-    //global.ctxHeart = ctxHeart;
+    global.reset = reset;
 })(this);
 
