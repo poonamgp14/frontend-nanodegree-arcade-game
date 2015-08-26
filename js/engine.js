@@ -161,7 +161,7 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 95, row * 63);
             }
         }
-        ctx.clearRect(0, 0, 850, 40);
+        ctx.clearRect(0, 0, 850, 50);
         renderEntities();
     }
 
@@ -186,9 +186,10 @@ var Engine = (function(global) {
             cactus.render();
         });
 
-        player.render();
+
 
         gem.render();
+        player.render();
 
 
     }
@@ -201,19 +202,21 @@ var Engine = (function(global) {
         // noop
         if (player.game_over){
             player.game_over = false;
-            allHeart = initHeartArr();
-            player.lives = 3;
-            player.score = 0;
-            render();
+            startAgain();
         }
         if (player.isGemCollected){
+            console.log("yes collected gem!")
             player.isGemCollected = false;
-            allHeart = initHeartArr();
-            player.lives = 3;
-            player.score = 0;
-            render();
-            player.rePosition();
+            startAgain();
         }
+    }
+
+    function startAgain(){
+        allHeart = initHeart();
+        player.lives = 2;
+        player.score = 0;
+        render();
+        player.rePosition();
     }
 
     /* Go ahead and load all of the images we know we're going to need to

@@ -1,3 +1,6 @@
+//TODO -  READ ABOUT IT!!!
+"use strict";
+
 var isCollision = false;
 
 // Enemies our player must avoid
@@ -32,11 +35,12 @@ var Player = function(){
     this.x = 420;
     this.y = 400;
     this.score = 0;
-    this.lives = 3;
+    this.lives = 2;
     this.width = 20;
     this.height = 40;
     this.game_over = false;
     this.isGemCollected = false;
+
 }
 
 Player.prototype.update = function(dt){
@@ -125,7 +129,10 @@ Heart.prototype.heartCollision = function(){
                 var heartPos = i;
                 allHeart.splice(heartPos,1);
                 player.score++ ;
-                player.lives++ ;
+        }
+        if (allHeart.length === 0){
+            //console.log("now its zero length");
+            player.lives++;
         }
     }
 };
@@ -159,6 +166,7 @@ Gem.prototype.gemCollision = function(){
         var collisionY = Math.abs(player.y - gem.y);
 
         if(collisionX < 40 && collisionY <=80 ){
+                console.log("yes,collided with gem")
                 player.score++ ;
                 player.isGemCollected = true;
                 reset();
@@ -214,98 +222,95 @@ cactusEnemy.prototype.cactusCollision = function(){
 //gem object
 var gem = new Gem();
 
-
 // player object
 var player = new Player();
 
-//creating cactus object
-//TODO - CREATE A LOOP FOR HEART INSTANCES
+//cactus object
+var allCactus = initCactus();
 
-function initCactusArr() {
-    var cactus0 = new cactusEnemy(15+95,115);
-    var cactus1 = new cactusEnemy(15+95*3,115);
-    var cactus2 = new cactusEnemy(15+95*5,115);
-    var cactus3 = new cactusEnemy(15+95*7,115);
-    var cactus4 = new cactusEnemy(15+95,(63*6)-15);
-    var cactus5 = new cactusEnemy(15+95*3,(63*6)-15);
-    var cactus6 = new cactusEnemy(15+95*5,(63*6)-15);
-    var cactus7 = new cactusEnemy(15+95*7,(63*6)-15);
-    //var arrayHeart
-    //var numberOfHeart = 10;
-    var cactusArry = [cactus0,cactus1,cactus2,cactus3,cactus4,cactus5,cactus6,cactus7];
-    return cactusArry;
+//heart object
+var allHeart = initHeart();
+
+//bugs object
+var allEnemies = initEnemy();
+
+//creating cactus enemy
+function initCactus() {
+    var cactusArr = [];
+    var numberOfcactus = 8;
+    var incrementArr = [95,95*3,95*5,95*7];
+    spawnObjs(15,115,incrementArr,4,cactusEnemy,cactusArr);
+    spawnObjs(15,363,incrementArr,4,cactusEnemy,cactusArr);
+
+    if (cactusArr.length === numberOfcactus){
+        return cactusArr;
+    }
+    else{
+        console.log("Sorry, length of allCactus is not " + numberOfcactus );
+    }
 };
-
-var allCactus = initCactusArr();
 
 
 //creating heart object
-//TODO - CREATE A LOOP FOR HEART INSTANCES
+function initHeart() {
+    var heartArr = [];
+    var numberOfHeart = 10;
+    var incrementArr = [0,95*2,95*4,95*6,95*8];
+    spawnObjs(15,115,incrementArr,5,Heart,heartArr);
+    spawnObjs(15,363,incrementArr,5,Heart,heartArr);
 
-function initHeartArr() {
-    var heart = new Heart(15,115);
-    var heart1 = new Heart(15+95*2,115);
-    var heart2 = new Heart(15+95*4,115);
-    var heart3 = new Heart(15+95*6,115);
-    var heart4 = new Heart(15+95*8,115);
-    var heart5 = new Heart(15,(63*6)-15);
-    var heart6 = new Heart(15+95*2,(63*6)-15);
-    var heart7 = new Heart(15+95*4,(63*6)-15);
-    var heart8 = new Heart(15+95*6,(63*6)-15);
-    var heart9 = new Heart(15+95*8,(63*6)-15);
-    //var arrayHeart
-    //var numberOfHeart = 10;
-    var heartArry = [heart,heart1,heart2,heart3,heart4,heart5,heart6,heart7,heart8,heart9];
-    return heartArry;
+    if (heartArr.length === numberOfHeart){
+        return heartArr;
+    }
+    else{
+        console.log("Sorry, length of allHeart is not " + numberOfHeart);
+    }
 };
 
-var allHeart = initHeartArr();
+//creating bugs enemey
+function initEnemy(){
+    var enemyArr = [];
+    var numberOfEnemies = 10;
+    spawnObjs(-500,100,100,2,Enemy,enemyArr);
+    spawnObjs(-400,163,100,3,Enemy,enemyArr);
+    spawnObjs(-700,226,100,3,Enemy,enemyArr);
+    spawnObjs(100,350,100,2,Enemy,enemyArr);
 
+    if (enemyArr.length === numberOfEnemies){
+        return enemyArr;
+    }
+    else{
+        console.log("Sorry, length of allEnemies is not " + numberOfEnemies);
+    }
+};
 
-
-// Place all enemy objects in an array called allEnemies
-var allEnemies = [];
-var numberOfEnemies = 10;
-var i=0;
-while (i < 10){
-    var startX_Bug = -500;
-    startX_Bug = startX_Bug + 100;
-    for (var i2 = 0; i2 < 2; i2++){
-        allEnemies[i2] = new Enemy(startX_Bug,100)
-        i++;
-    }
-    startX_Bug = -400;
-    for (var i2 = 2; i2 < 5; i2++){
-        allEnemies[i2] = new Enemy(startX_Bug,(100+63))
-        i++
-    }
-    startX_Bug = -700;
-    for (var i2 = 5; i2 < 8; i2++){
-        allEnemies[i2] = new Enemy(startX_Bug,(100+63+63))
-        i++;
-    }
-    startX_Bug = 100;
-    for (var i2 = 8; i2 < 10; i2++){
-        allEnemies[i2] = new Enemy(startX_Bug,(100+63+63+63+63))
-        i++;
+//creating objects
+function spawnObjs(x,y,incrementByOrArr,numOfObj,className,resultingArr){
+    for (var i = 0; i < numOfObj; i++){
+        if(incrementByOrArr instanceof Array){
+            var finalX = x + incrementByOrArr[i];
+            resultingArr.push(new className(finalX,y));
+        }
+        else {
+            var finalX = x + incrementByOrArr;
+            resultingArr.push(new className(finalX,y));
+        }
     }
 
 };
 
-
+//checks for collision
 var checkForCollision = function(arrayOfObj,anotherObj) {
     for (var i = 0; i < arrayOfObj.length; i++) {
     var collisionX = Math.abs(anotherObj.x - arrayOfObj[i].x);
         var collisionY = Math.abs(anotherObj.y - arrayOfObj[i].y);
         if((collisionX < 40 && collisionY < 40)){
-                //console.log("yes!"+ arrayOfObj[i] +" collided wid "+ "player")
                 return isCollision = true;
-
-
         }
     }
 };
 
+//event functions
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
         37: 'left',
