@@ -23,17 +23,12 @@ var Engine = (function(global) {
         win = global.window,
         bkgdCanvas = document.getElementById('canvas-bkgd'),
         ctx = bkgdCanvas.getContext('2d'),
-        //heartCanvas = document.getElementById('canvas-heart'),
-        //ctxHeart = heartCanvas.getContext('2d'),
         lastTime;
 
-    /*canvas.width = 505;
-    canvas.height = 606;*/
+
     bkgdCanvas.width = 850;
     bkgdCanvas.height = 550;
-    //heartCanvas.width = 850;
-    //heartCanvas.height = 550;
-    //doc.body.appendChild(canvas);
+
 
 
 
@@ -105,6 +100,13 @@ var Engine = (function(global) {
         });
 
         player.update();
+
+        // updates all extra entities included in renderExtraEntities()
+        updateExtra();
+
+    }
+
+    function updateExtra(dt) {
         allHeart.forEach(function(heart){
             heart.update(dt);
         })
@@ -112,8 +114,7 @@ var Engine = (function(global) {
             cactus.update(dt);
         })
         gem.update(dt);
-
-    }
+    };
 
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
@@ -135,8 +136,6 @@ var Engine = (function(global) {
                 'images/grass-block.png',    // Row 2 of 2 of grass
                 'images/stone-block.png',
                 'images/grass-block.png'
-
-
             ],
             numRows = 8,
             numCols = 9,
@@ -146,9 +145,6 @@ var Engine = (function(global) {
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
          */
-
-
-
         for (row = 0; row < numRows; row++) {
             for (col = 0; col < numCols; col++) {
                 /* The drawImage function of the canvas' context element
@@ -172,12 +168,21 @@ var Engine = (function(global) {
     function renderEntities() {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
+         *all extra entities have been included in renderExtraEntities
          */
-
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
 
+        renderExtraEntities();
+
+        player.render();
+    };
+
+    /* renderExtraEntities include rendering gem, hearts and cactus enemey
+
+    */
+    function renderExtraEntities(){
         allHeart.forEach(function(heart) {
             heart.render();
         });
@@ -185,13 +190,7 @@ var Engine = (function(global) {
         allCactus.forEach(function(cactus) {
             cactus.render();
         });
-
-
-
         gem.render();
-        player.render();
-
-
     }
 
     /* This function does nothing but it could have been a good place to
@@ -199,19 +198,21 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     var reset = function() {
-        // noop
+        //this resets when number of lives is zero or less than zero
         if (player.game_over){
+            $('#game-over').show();
             player.game_over = false;
-            startAgain();
         }
+        //this resets when gem is collected
         if (player.isGemCollected){
-            console.log("yes collected gem!")
-            player.isGemCollected = false;
             startAgain();
+            $('#gem-collected').show();
+            player.isGemCollected = false;
         }
-    }
+    };
 
-    function startAgain(){
+    // all the reset properties are included in this function()
+    function startAgain()  {
         allHeart = initHeart();
         player.lives = 2;
         player.score = 0;
@@ -233,13 +234,46 @@ var Engine = (function(global) {
         'images/Heart.png',
         'images/Gem-Orange.png'
     ]);
-    Resources.onReady(init);
+
+    /* Instead of calling init() after loading the images, it calls the mainMenu()
+    * which load the start game and instructions functionality and when player
+    * clicks start game, it call the init()
+    */
+    Resources.onReady(mainMenu);
+
+    // shows up the main menu item after loading the images
+    function mainMenu() {
+        $("#main").show();
+    }
+
+    // calls up init() when player clicks 'Start Game' which them calls main()
+    $('.play').click(function() {
+        $('#menu').hide();
+        init();
+    })
+
+    // shows the instructions list on clicking instructions button on main menu
+    $('.instructions').click(function() {
+        $(this).toggleClass("instructions-clicked");;
+    })
+
+    // when number of lives reduced to zero, shows the restart menu
+    $('.restart').click(function() {
+        $('#game-over').hide();
+            startAgain();
+    });
+
+    // when gems is collected, shows the restart menu
+    $('.play-again').click(function() {
+        $('#gem-collected').hide();
+            startAgain();
+    });
 
     /* Assign the canvas' context object to the global variable (the window
      * object when run in a browser) so that developer's can use it more easily
      * from within their app.js files.
      */
     global.ctx = ctx;
+    // setting reset() in global scope to use in app.js
     global.reset = reset;
 })(this);
-
