@@ -60,7 +60,7 @@ var Engine = (function(global) {
          * function again as soon as the browser is able to draw another frame.
          */
         win.requestAnimationFrame(main);
-    };
+    }
 
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
@@ -114,7 +114,7 @@ var Engine = (function(global) {
             cactus.update(dt);
         })
         gem.update(dt);
-    };
+    }
 
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
@@ -177,7 +177,7 @@ var Engine = (function(global) {
         renderExtraEntities();
 
         player.render();
-    };
+    }
 
     /* renderExtraEntities include rendering gem, hearts and cactus enemey
 
@@ -197,28 +197,9 @@ var Engine = (function(global) {
      * handle game reset states - maybe a new game menu or a game over screen
      * those sorts of things. It's only called once by the init() method.
      */
-    var reset = function() {
-        //this resets when number of lives is zero or less than zero
-        if (player.game_over){
-            $('#game-over').show();
-            player.game_over = false;
-        }
-        //this resets when gem is collected
-        if (player.isGemCollected){
-            startAgain();
-            $('#gem-collected').show();
-            player.isGemCollected = false;
-        }
-    };
+     function reset(){
 
-    // all the reset properties are included in this function()
-    function startAgain()  {
-        allHeart = initHeart();
-        player.lives = 2;
-        player.score = 0;
-        render();
-        player.rePosition();
-    }
+     }
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -250,30 +231,18 @@ var Engine = (function(global) {
     $('.play').click(function() {
         $('#menu').hide();
         init();
-    })
+    });
 
     // shows the instructions list on clicking instructions button on main menu
     $('.instructions').click(function() {
-        $(this).toggleClass("instructions-clicked");;
-    })
-
-    // when number of lives reduced to zero, shows the restart menu
-    $('.restart').click(function() {
-        $('#game-over').hide();
-            startAgain();
+        $(this).toggleClass("instructions-clicked");
     });
 
-    // when gems is collected, shows the restart menu
-    $('.play-again').click(function() {
-        $('#gem-collected').hide();
-            startAgain();
-    });
+
 
     /* Assign the canvas' context object to the global variable (the window
      * object when run in a browser) so that developer's can use it more easily
      * from within their app.js files.
      */
     global.ctx = ctx;
-    // setting reset() in global scope to use in app.js
-    global.reset = reset;
 })(this);

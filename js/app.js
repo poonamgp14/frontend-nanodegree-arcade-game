@@ -1,71 +1,115 @@
-//TODO: -  READ ABOUT IT!!!
 "use strict";
 
-// BUG Enemies our player must avoid
-var Enemy = function(x,y,speed) {
-    this.sprite = 'images/enemy-bug.png';
+/*SUPER CLASS / constructor for the Game Characters object
+*The game has five characters- player, bug enemies,cactus enemy,
+* heart and gem and all of them share same properties like x,y,
+*width and height. The render method is also shared among all
+*game characters except gem object. Gem has its own render method
+*since gem appears only when all Hearts are collected by player
+*/
+var GameChar = function(x,y,w,h){
     this.x = x;
     this.y = y;
-    this.speed = Math.floor(Math.random() * 250 + 1);
-    this.width = 70;
-    this.height = 30;
-}
+    this.width = w;
+    this.height = h;
+};
 
+GameChar.prototype.render = function(){
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y,this.width,this.height);
+};
+
+/*SUB CLASS for player, bug enemies,cactus enemy,
+* heart and gem with the shared methods and properties(shared with
+*super class) and extra methods and properties
+*/
+
+/*Enemy sub-class invokes GameChar constructor using
+* call method with passing 'this' as first argument. This first
+*argument will set the reference to the current
+*object(i.e Enemy Object). Invoking GameChar() without
+*call() would set 'this' reference to GameChar objects
+*To prevent this, GameChar() is invoke with call()
+*/
+var Enemy = function(x,y,w,h) {
+    GameChar.call(this,x,y,60,80);
+    this.sprite = 'images/enemy-bug.png';
+    this.speed = Math.floor(Math.random() * 250 + 1);
+};
+
+/*The below code would led the instances of enemy object
+*delegate to GameChar constructor function for the properties
+*not found in Enemy constructor function.
+*Here, Enemy.Prototype is being created as a brand new object
+(that is overwritten) which delegates to GameChar.prototype
+*for failed lookups or shared properties!
+*/
+Enemy.prototype = Object.create(GameChar.prototype);
+
+//Reset the constructor of enemy instances from GameChar to Enemy
+Enemy.prototype.constructor = Enemy;
+
+/*
+*
+*Unique methods for enemy instances
+*
+*/
 Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
+    /*dt parameter ensure the game runs at the same speed for
+    all computers.*/
 
     this.x += dt * this.speed;
-
-    //when enemy moves out of canvas
     if(this.x > 905) {
         this.x = Math.random() * - 1000;
     }
 };
 
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
-
-//PLAYER CLASS AND ITS METHODS
-var Player = function() {
+/*PLAYER CLASS AND ITS METHODS
+*Player sub-class invokes GameChar constructor using
+* call method with passing 'this' as first argument.
+*/
+var Player = function(){
+    GameChar.call(this,420,400,40,60);
     this.sprite = 'images/char-boy.png';
-    this.x = 420;
-    this.y = 400;
     this.score = 0;
     this.lives = 2;
-    this.width = 20;
-    this.height = 40;
     this.game_over = false;
     this.isGemCollected = false;
-}
+};
 
-Player.prototype.update = function(dt) {
-    //checks for collision between player and bug
-    this.enemyCollision();
+//shared properties between GameChar and Player function
+//and let the Player.prototype to delegate to GameChar.prototype
+Player.prototype = Object.create(GameChar.prototype);
 
-    //When player goes to water
-    if (this.y < 0) {
+//Reset the constructor of player instances from GameChar to Player
+Player.prototype.constructor = Player;
+
+/*
+*
+*Unique methods for player instances
+*
+*/
+Player.prototype.update = function(dt){
+
+    this.bugCollision();
+
+    if(this.y < 0){
         this.rePosition();
-    };
-
-    //Resets the game when number of lives is zero or less than zero
-    if (player.lives <= 0) {
-            this.game_over = true;
-            reset();
+    }
+    if(this.lives <= 0){
+        this.game_over = true;
+        player.rePosition();
     }
 };
 
-Player.prototype.render = function() {
+Player.prototype.render = function(){
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-    ctx.fillStyle = "white";
+    ctx.fillStyle = 'white';
     ctx.font = '33px serif';
-    ctx.fillText("Score: " + this.score, 0, 40);
-    ctx.fillText("Lives: " + this.lives, 400, 40);
+    ctx.fillText('Score: ' + this.score, 0, 40);
+    ctx.fillText('Lives: ' + this.lives, 400, 40);
 };
 
-Player.prototype.handleInput = function(direction) {
+Player.prototype.handleInput = function(direction){
     if (direction === 'up' && this.y > 5){
         this.y -= 65;
     }
@@ -80,128 +124,198 @@ Player.prototype.handleInput = function(direction) {
     }
 };
 
-//checks for collision between player and bug
-Player.prototype.enemyCollision = function() {
-    //calls this checkForCollision() defined in global scope
-    var collEnemy = checkForCollision(allEnemies,player);
-    if (collEnemy){
-        this.score-- ;
-        this.lives-- ;
-        isCollision = false;
-        this.rePosition();
+Player.prototype.bugCollision = function(){
+    var len = allEnemies.length;
+    for (var i = 0; i < len ; i++) {
+        var collisionX = Math.abs(player.x - allEnemies[i].x);
+        var collisionY = Math.abs(player.y - allEnemies[i].y);
+        if(collisionX < 20 && (collisionY > 70 && collisionY <= 81)){
+            this.score-- ;
+            this.lives-- ;
+            this.rePosition();
+        }
     }
 };
 
-//re-positions the player when hit a bug or cactus
-Player.prototype.rePosition = function() {
-    console.log('yes,called rePosition method');
+Player.prototype.rePosition = function(){
     this.x = 420;
     this.y = 400;
-}
+    //this resets when number of lives of player is zero
+    //and shows the game-over CSS properties which has
+    //restart menu
+    if (player.game_over){
+        $('#game-over').show();
+        player.game_over = false;
+    }
+    //this resets when gem is collected
+    //and shows the gem-collected CSS properties which has
+    //restart menu
+    if (player.isGemCollected){
+        $('#gem-collected').show();
+        player.isGemCollected = false;
+    }
+};
 
-//HEART CLASS AND ITS METHODS
-var Heart = function(x,y) {
+//defines the properties of player again on restarting the game
+Player.prototype.startAgain= function(){
+    player.lives = 2;
+    player.score = 0;
+    player.render();
+};
+
+/*when a player wants to play again after losing all the lives.
+*Playing again hides the #game-over CSS properties and
+*resets the player properties and fill in all the hearts
+*by invoking initheart()
+*/
+$('.restart').click(function() {
+    $('#game-over').hide();
+    allHeart = initHeart();
+    player.startAgain();
+});
+
+/*when a player wants to play again
+*after winning the game(gem collection).
+*Playing again hides the #gem-collected CSS properties and
+*resets the player properties and fill in all the hearts
+*by invoking initheart()
+*/
+$('.play-again').click(function() {
+    $('#gem-collected').hide();
+    allHeart = initHeart();
+    player.startAgain();
+});
+
+/*HEART CLASS AND ITS METHODS
+*heart sub-class invokes GameChar constructor using
+* call method with passing 'this' as first argument.
+*/
+var Heart = function(x,y){
+    GameChar.call(this,x,y,60,60);
     this.sprite = 'images/Heart.png';
-    this.x = x;
-    this.y = y;
-    this.width = 60;
-    this.height = 60;
 };
 
-Heart.prototype.update = function(dt) {
-    //checks for collision between heart and player
+//shared properties between GameChar and Heart function
+//and let the Heart.prototype to delegate to GameChar.prototype
+Heart.prototype = Object.create(GameChar.prototype);
+
+
+//Reset the constructor of player instances from GameChar to Player
+Heart.prototype.constructor = Heart;
+
+/*
+*
+*Unique methods for heart instances
+*
+*/
+Heart.prototype.update = function(dt){
     this.heartCollision();
-    //TODO: -setinterval function for pounding of heart
+    //TODO -setinterval function for pounding of heart
 };
 
-Heart.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y,this.width,this.height);
-};
-
-//checks for collision between player and heart
-Heart.prototype.heartCollision = function() {
-    for (var i = 0; i < allHeart.length; i++) {
+Heart.prototype.heartCollision = function(){
+    var len = allHeart.length;
+    for (var i = 0; i < len; i++) {
         var collisionX = Math.abs(player.x - allHeart[i].x);
         var collisionY = Math.abs(player.y - allHeart[i].y);
 
-        if(collisionX <= 40 && (collisionY > 90 && collisionY <= 105)) {
-                var heartPos = i;
-                allHeart.splice(heartPos,1);
-                player.score++ ;
+        if(collisionX <= 40 && (collisionY > 90 && collisionY <=105)){
+            len-- ;
+            var heartPos = i;
+            allHeart.splice(heartPos,1);
+            player.score++ ;
         }
-        //when all hearts are collected, number of lives increases by one
-        if (allHeart.length === 0) {
+        if(allHeart.length === 0){
             player.lives++;
         }
     }
 };
 
-//Gem CLASS AND ITS METHODS
-//Gem appears when all hearts are collected
-var Gem = function() {
+/*GEM CLASS AND ITS METHODS
+*heart sub-class invokes GameChar constructor using
+* call method with passing 'this' as first argument.
+*/
+var Gem = function(){
+    GameChar.call(this,770,480,60,60);
     this.sprite = 'images/Gem-Orange.png';
-    this.x = 770;
-    this.y = 480;
-    this.width = 60;
-    this.height = 60;
     this.gemRendered = false;
 };
 
-Gem.prototype.update = function(dt) {
+//shared properties between GameChar and Player function
+//and let the Player.prototype to delegate to GameChar.prototype
+Gem.prototype = Object.create(GameChar.prototype);
+
+//Reset the constructor of player instances from GameChar to Player
+Gem.prototype.constructor = Gem;
+
+/*
+*
+*Unique methods for gem instances
+*
+*/
+Gem.prototype.update = function(dt){
     this.gemCollision();
+
+    //TODO:-setinterval function for pounding of heart
 };
 
-Gem.prototype.render = function() {
-    //when length of allHeart is zero, then gem appears!
+//gem has its own render methods and thus would not
+//delegate to GameChar.prototype for render method
+Gem.prototype.render = function(){
+
     if (allHeart.length === 0){
-        console.log("now its zero length");
         ctx.drawImage(Resources.get(this.sprite),this.x, this.y,this.width,this.height);
         this.gemRendered = true;
     }
 };
 
-//checks for collision between player and gem
-Gem.prototype.gemCollision = function() {
-    if (this.gemRendered) {
+Gem.prototype.gemCollision = function(){
+    if(this.gemRendered){
         var collisionX = Math.abs(player.x - gem.x);
         var collisionY = Math.abs(player.y - gem.y);
 
-        if(collisionX < 40 && collisionY <=80 ) {
-            console.log("yes,collided with gem")
+        if(collisionX < 40 && collisionY <=80 ){
             this.gemRendered = false;
             player.score++ ;
             player.isGemCollected = true;
-            reset();
+            player.rePosition();
         }
     }
 };
 
-// Cactus Enemies our player must avoid
+/*Cactus Enemies our player must avoid
+* cactusEnemy sub-class invokes GameChar constructor using
+* call method with passing 'this' as first argument.
+*/
 var cactusEnemy = function(x,y) {
+    GameChar.call(this,x,y,60,60);
     this.sprite = 'images/cactus.png';
-    this.x = x;
-    this.y = y;
-    this.width = 60;
-    this.height = 60;
-}
+};
+//shared properties between GameChar and cactusEnemy function
+//and let the cactusEnemy.prototype to delegate to GameChar.prototype
+cactusEnemy.prototype = Object.create(GameChar.prototype);
+
+//Reset the constructor of player instances from GameChar to cactusEnemy
+cactusEnemy.prototype.constructor = cactusEnemy;
+
+/*
+*
+*Unique methods for cactusEnemy instances
+*
+*/
 
 cactusEnemy.prototype.update = function(dt) {
     this.cactusCollision();
 };
 
-cactusEnemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y,this.width,this.height);
-
-}
-
-//checks for collision between player and cactus
-cactusEnemy.prototype.cactusCollision = function() {
-    for (var i = 0; i < allCactus.length; i++) {
+cactusEnemy.prototype.cactusCollision = function(){
+    var len = allCactus.length;
+    for (var i = 0; i < len; i++) {
 
         var collisionX = Math.abs(player.x - allCactus[i].x);
         var collisionY = Math.abs(player.y - allCactus[i].y);
 
-        if(collisionX < 40 && (collisionY > 90 && collisionY <= 105)) {
+        if(collisionX < 40 && (collisionY > 90 && collisionY <= 105)){
             player.score-- ;
             player.lives--;
             player.rePosition();
@@ -209,11 +323,11 @@ cactusEnemy.prototype.cactusCollision = function() {
     }
 };
 
-/* Now instantiate your objects.
-* Cactus,Heart and Enemy are created by calling thier respective
-* init function which further calls spawnObjs() defined below
-*
-*/
+// Now instantiate your objects.
+
+//gem object
+var gem = new Gem();
+
 // player object
 var player = new Player();
 
@@ -226,92 +340,101 @@ var allHeart = initHeart();
 //bugs object
 var allEnemies = initEnemy();
 
-//gem object
-var gem = new Gem();
-
-//creating cactus enemy
+//creating cactus enemy by invoking spawnobjs() defined below
 function initCactus() {
     var cactusArr = [];
     var numberOfcactus = 8;
+
+    //position of cactus on second,fourth,sixth, eigth column
     var incrementArr = [95,95*3,95*5,95*7];
+
+    //places 4 cactus on 2nd row
     spawnObjs(15,115,incrementArr,4,cactusEnemy,cactusArr);
+
+    //places 4 cactus on 6th row
     spawnObjs(15,363,incrementArr,4,cactusEnemy,cactusArr);
 
     if (cactusArr.length === numberOfcactus){
         return cactusArr;
     }
     else{
-        console.log("Sorry, length of allCactus is not " + numberOfcactus );
+        console.log('Sorry, length of allCactus is not ' + numberOfcactus );
     }
-};
+}
 
 
-//creating heart object
+//creating heart object by invoking spawnobjs() defined below
 function initHeart() {
     var heartArr = [];
     var numberOfHeart = 10;
+
+    //position of heart on first,third, fifth, seventh,9th column
     var incrementArr = [0,95*2,95*4,95*6,95*8];
+
+
+    // five hearts on 2nd row
     spawnObjs(15,115,incrementArr,5,Heart,heartArr);
+
+    //five hearts on 6th row
     spawnObjs(15,363,incrementArr,5,Heart,heartArr);
 
     if (heartArr.length === numberOfHeart){
         return heartArr;
     }
     else{
-        console.log("Sorry, length of allHeart is not " + numberOfHeart);
+        console.log('Sorry, length of allHeart is not ' + numberOfHeart);
     }
-};
+}
 
-//creating bugs enemey
+//creating bugs enemey by invoking spawnobjs() defined below
 function initEnemy(){
     var enemyArr = [];
     var numberOfEnemies = 10;
-    spawnObjs(-500,100,100,2,Enemy,enemyArr);
-    spawnObjs(-400,163,100,3,Enemy,enemyArr);
-    spawnObjs(-700,226,100,3,Enemy,enemyArr);
-    spawnObjs(100,350,100,2,Enemy,enemyArr);
+    //bugs on 3rd row(height of each row is 63)
+    spawnObjs(-500,(30+63*2),100,2,Enemy,enemyArr);
 
+    //bugs on 4th row
+    spawnObjs(-400,(30+63*3),100,3,Enemy,enemyArr);
+
+    //bugs on 5th row
+    spawnObjs(-700,(30+63*4),100,3,Enemy,enemyArr);
+
+    //bugs on 7th row
+    spawnObjs(100,(30+63*6),100,2,Enemy,enemyArr);
+    //return enemyArr;
     if (enemyArr.length === numberOfEnemies){
         return enemyArr;
     }
     else{
-        console.log("Sorry, length of allEnemies is not " + numberOfEnemies);
+        console.log('Sorry, length of allEnemies is not ' + numberOfEnemies);
     }
-};
+}
 
-/*This spawn objects for given value of y and takes incrementing
-* number which can be a single digit or it can be an array.
-*for example, x position of enemies is incremented by 100
-* and I am passing an array for incrementing x position for
-*cactus,heart.
+/*This functions creates instances of any object and parameter are
+* x and y coridinate for the instances and name of the class for which
+* to create instances and OUTPUT is an array of instances of that object
+*incrementByOrArr takes array or number which you want to
+*increment for x cordinates.
+*In my game, I have places heart and cactus at every alternative
+*tile in canvas. Thus, incremented with muliples of 95
+*(width and heigth of each tile on canvas is 95,63 taken from
+*render()in engine.js).And, bugs are increments by 100
 */
 function spawnObjs(x,y,incrementByOrArr,numOfObj,className,resultingArr){
     for (var i = 0; i < numOfObj; i++){
+        //if x value is incremented by elements defined in array
         if(incrementByOrArr instanceof Array){
             var finalX = x + incrementByOrArr[i];
             resultingArr.push(new className(finalX,y));
         }
-        else {
+        //if x value is incremented by a single number
+        else{
             var finalX = x + incrementByOrArr;
             resultingArr.push(new className(finalX,y));
         }
     }
-};
 
-/*checks for collision
-*this is defined in global scope and used for
-*player.enemyCollision()
-*/
-var isCollision = false;
-var checkForCollision = function(arrayOfObj,anotherObj) {
-    for (var i = 0; i < arrayOfObj.length; i++) {
-    var collisionX = Math.abs(anotherObj.x - arrayOfObj[i].x);
-        var collisionY = Math.abs(anotherObj.y - arrayOfObj[i].y);
-        if((collisionX < 40 && collisionY < 40)){
-                return isCollision = true;
-        }
-    }
-};
+}
 
 //event functions
 document.addEventListener('keyup', function(e) {
